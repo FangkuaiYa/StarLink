@@ -1,0 +1,26 @@
+appId: io.starlink.vc
+productName: StarLink
+copyright: Copyright © 2024
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+
+win:
+  artifactName: StarLink Setup ${version}.${ext}
+  publish:
+    - github
+  nsis:
+    oneClick: false
+    allowToChangeInstallationDirectory: true
+
+linux:
+  artifactName: StarLink-${version}.${ext}
+  target:
+    - AppImage
+  publish:
+    - github
