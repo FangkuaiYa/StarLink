@@ -1,0 +1,47 @@
+name: CodeQL
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  analyze:
+    name: Analyze TypeScript
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [typescript]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Enable Corepack (Yarn)
+        run: corepack enable
+
+      - name: Install Dependencies
+        run: yarn install --cache-folder .yarn --network-timeout 100000
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3

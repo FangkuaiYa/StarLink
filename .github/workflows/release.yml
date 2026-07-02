@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.0.1) — leave empty to use package.json version'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            dist: publish
+            installer: dist/StarLink Setup*.exe
+            artifact_installer: StarLink Installer Windows
+            artifact_unpacked64: StarLink Unpacked 64bit
+            artifact_unpacked32: StarLink Unpacked 32bit
+          - os: ubuntu-latest
+            dist: publish:linux
+            installer: dist/StarLink-*.AppImage
+            artifact_installer: StarLink Installer Linux
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js and Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Enable Corepack (Yarn)
+        run: corepack enable
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb1-dev libx11-dev
+
+      - name: Install Dependencies
+        run: yarn install --cache-folder .yarn --network-timeout 100000
+
+      - name: Build and Publish
+        run: yarn run ${{ matrix.dist }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_installer }}
+          path: ${{ matrix.installer }}
+          if-no-files-found: error
+
+      - name: Upload Unpacked 64bit
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_unpacked64 }}
+          path: dist/win-unpacked
+
+      - name: Upload Unpacked 32bit
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_unpacked32 }}
+          path: dist/win-ia32-unpacked
