@@ -42,7 +42,24 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxcb1-dev libx11-dev
+          sudo apt-get install -y \
+            build-essential \
+            libxcb1-dev \
+            libxcb-keysyms1-dev \
+            libxcb-shape0-dev \
+            libxcb-xfixes0-dev \
+            libxcb-randr0-dev \
+            libxcb-xinerama0-dev \
+            libx11-dev \
+            libx11-xcb-dev \
+            libxfixes-dev \
+            libxrandr-dev \
+            libxcomposite-dev \
+            libxdamage-dev \
+            libxext-dev \
+            libxtst-dev \
+            libxkbcommon-dev \
+            libxkbcommon-x11-dev
 
       - name: Install Dependencies
         run: yarn install --cache-folder .yarn --network-timeout 100000
